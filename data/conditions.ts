@@ -75,18 +75,22 @@ export const Conditions: {[k: string]: ConditionData} = {
 			return false;
 		},
 	},
-	frz: {
-		name: 'frz',
+	frb: {
+		name: 'frb',
 		effectType: 'Status',
 		onStart(target, source, sourceEffect) {
-			if (sourceEffect && sourceEffect.effectType === 'Ability') {
-				this.add('-status', target, 'frz', '[from] ability: ' + sourceEffect.name, '[of] ' + source);
+			if (sourceEffect && sourceEffect.id === 'freezeorb') {
+				this.add('-status', target, 'frb', '[from] item: Freeze Orb');
+			} else if (sourceEffect && sourceEffect.effectType === 'Ability') {
+				this.add('-status', target, 'frb', '[from] ability: ' + sourceEffect.name, '[of] ' + source);
 			} else {
-				this.add('-status', target, 'frz');
+				this.add('-status', target, 'frb');
 			}
-			if (target.species.name === 'Shaymin-Sky' && target.baseSpecies.baseSpecies === 'Shaymin') {
-				target.formeChange('Shaymin', this.effect, true);
-			}
+		},
+		// Damage reduction is handled directly in the sim/battle.js damage function
+		onResidualOrder: 10,
+		onResidual(pokemon) {
+			this.damage(pokemon.baseMaxhp / 16);
 		},
 		onBeforeMovePriority: 10,
 		onBeforeMove(pokemon, target, move) {
@@ -649,6 +653,12 @@ export const Conditions: {[k: string]: ConditionData} = {
 				return 8;
 			}
 			return 5;
+		},
+		onModifyDefPriority: 10,
+		onModifyDef(def, pokemon){
+			if(pokemon.hasType('Ice') && this.field.isWeather('hail')){
+				return this.modify(def, 1.5);
+			}
 		},
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
