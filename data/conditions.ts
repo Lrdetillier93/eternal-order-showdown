@@ -680,6 +680,30 @@ export const Conditions: {[k: string]: ConditionData} = {
 			this.add('-weather', 'none');
 		},
 	},
+	clearair:{
+		name: "Clear Air",
+		effectType: "Weather",
+		duration: 5,
+		durationCallback(source, effect){
+			if(source?.hasItem('lightrock')){
+				return 8;
+			}
+			return 5;
+		},
+		onTryMove(attacker, defender, move){
+			if(move.type === 'Normal'){
+				this.debug("Clear Air speed boost.");
+				attacker.speed *= 1.2;
+				return null;
+			}
+		},
+		onModifyDamage(damage, source, target, move) {
+			if (target.getMoveHitData(move).typeMod < 0) {
+				this.debug('Clear Air boost');
+				return this.chainModify(2);
+			}
+		},
+	},
 	deltastream: {
 		name: 'DeltaStream',
 		effectType: 'Weather',
