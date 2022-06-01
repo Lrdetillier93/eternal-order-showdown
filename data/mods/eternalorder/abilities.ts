@@ -8,6 +8,16 @@ export const Abilities: {[k: string]: ModdedAbilityData} = {
 			return this.chainModify(1.2)
 		}
 	},
+	corrosion:{
+		inherit: true,
+		shortDesc: "This pokemon can poison the target regardless of typing, and its Poison-type moves are super-effective against Steel types.",
+		rating: 2.5,
+		onSourceModifyDamage(dmg, attacker, defender, move){
+			if(defender.hasType("Steel") && move.type === "Poison"){
+				//Something goes here. No idea what.
+			}
+		}
+	},
 	dauntlessshield:{
 		inherit: true,
 		shortDesc: "Raises both defenses by one stage on switch in.",
@@ -31,6 +41,47 @@ export const Abilities: {[k: string]: ModdedAbilityData} = {
 			if (pokemon.hp <= pokemon.maxhp / 3) {
 				return this.chainModify(0.5);
 			}
+		},
+	},
+	flamebody:{
+		inherit: true,
+		shortDesc: '30% chance a Pokemon making contact with this Pokemon will be burned, and burn chance is doubled on moves that can burn.',
+		rating: 3,
+		onModifyMovePriority: -2,
+		onModifyMove(move) {
+			if (move.secondaries) {
+				this.debug('doubling secondary chance of burn');
+				for (const secondary of move.secondaries) {
+					if (secondary.chance && secondary.status === 'brn') secondary.chance *= 2;
+				}
+			}
+		},
+	},
+	flareboost:{
+		inherit:true,
+		shortDesc: "Raises Special Attack and Speed by 1.5x when poisoned.",
+		rating: 3,
+		onBasePower(basePower){
+			return this.chainModify(1);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, attacker){
+			if ((attacker.status === 'brn')) {
+				return this.chainModify(1.5);
+			}
+		},
+		onModifySpe(spe, attacker){
+			if ((attacker.status === 'brn')) {
+				return this.chainModify(1.5);
+			}
+		},
+	},
+	galewings:{
+		inherit: true,
+		shortDesc: "Gives Flying-type moves priority if this Pokemon is over 50% health.",
+		rating: 4,
+		onModifyPriority(priority, pokemon, target, move) {
+			if (move?.type === 'Flying' && pokemon.hp >= pokemon.maxhp / 2) return priority + 1;
 		},
 	},
 	heavymetal:{
@@ -67,6 +118,15 @@ export const Abilities: {[k: string]: ModdedAbilityData} = {
 		onModifySpDPriority: 5,
 		onModifySpD(spd){
 			return this.modify(spd, 0.75)
+		},
+	},
+	icebody:{
+		inherit: true,
+		rating: 1.5,
+		onWeather(target, source, effect) {
+			if (effect.id === 'hail') {
+				this.heal(target.baseMaxhp / 8);
+			}
 		},
 	},
 	ironfist:{
@@ -127,6 +187,15 @@ export const Abilities: {[k: string]: ModdedAbilityData} = {
 			}
 		},
 	},
+	raindish: {
+		inherit: true,
+		rating: 1.5,
+		onWeather(target, source, effect) {
+			if (effect.id === 'raindance' || effect.id === 'primordialsea') {
+				this.heal(target.baseMaxhp / 8);
+			}
+		},
+	},
 	runaway:{
 		inherit: true,
 		shortDesc: "This Pokemon cannot be trapped.",
@@ -173,6 +242,20 @@ export const Abilities: {[k: string]: ModdedAbilityData} = {
 			}
 		},
 	},
+	static:{
+		inherit: true,
+		shortDesc: '30% chance a Pokemon making contact with this Pokemon will be paralyzed, and paralysis chance is doubled on moves that can burn.',
+		rating: 3,
+		onModifyMovePriority: -2,
+		onModifyMove(move) {
+			if (move.secondaries) {
+				this.debug('doubling secondary chance of paralysis');
+				for (const secondary of move.secondaries) {
+					if (secondary.chance && secondary.status === 'par') secondary.chance *= 2;
+				}
+			}
+		},
+	},
 	tangledfeet:{
 		inherit:true,
 		shortDesc: "Increases speed of this Pokemon while confused.",
@@ -181,6 +264,25 @@ export const Abilities: {[k: string]: ModdedAbilityData} = {
 			if (typeof speed !== 'number') return;
 			if (target?.volatiles['confusion']) {
 				this.debug('Tangled Feet - increasing  speed');
+				return this.chainModify(1.5);
+			}
+		},
+	},
+	toxicboost:{
+		inherit:true,
+		shortDesc: "Raises Attack and Speed by 1.5x when poisoned.",
+		rating: 3,
+		onBasePower(basePower){
+			return this.chainModify(1);
+		},
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker){
+			if ((attacker.status === 'psn' || attacker.status === 'tox')) {
+				return this.chainModify(1.5);
+			}
+		},
+		onModifySpe(spe, attacker){
+			if ((attacker.status === 'psn' || attacker.status === 'tox')) {
 				return this.chainModify(1.5);
 			}
 		},
@@ -204,6 +306,11 @@ export const Abilities: {[k: string]: ModdedAbilityData} = {
 			}
 			pokemon.addVolatile('truant')
 		},
+	},
+	unnerve:{
+		inherit: true,
+		shortDesc: "While this Pokemon is active, prevents the opponent from using items."
+		//Item suppression implemented in Pokemon.ignoringItem() within sim/pokemon.js
 	},
 	wonderguard:{
 		inherit: true,
