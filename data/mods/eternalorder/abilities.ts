@@ -8,6 +8,33 @@ export const Abilities: {[k: string]: ModdedAbilityData} = {
 			return this.chainModify(1.2)
 		}
 	},
+	colorchange:{
+		inherit: true,
+		shortDesc: "This Pokemon's type changes to the type of a move it's hit by before the move hits, unless it has the type.",
+		rating: 1,
+		onAfterMoveSecondary(target, source, move){
+			return
+		},
+		onSourcePrepareHit(source, target, move) {
+			if (!target.hp) return;
+			const type = move.type;
+			if (
+				target.isActive && move.effectType === 'Move' && move.category !== 'Status' &&
+				type !== '???' && !target.hasType(type)
+			) {
+				if (!target.setType(type)) return false;
+				this.add('-start', target, 'typechange', type, '[from] ability: Color Change');
+
+				if (target.side.active.length === 2 && target.position === 1) {
+					// Curse Glitch
+					const action = this.queue.willMove(target);
+					if (action && action.move.id === 'curse') {
+						action.targetLoc = -1;
+					}
+				}
+			}
+		},
+	},
 	corrosion:{
 		inherit: true,
 		shortDesc: "This pokemon can poison the target regardless of typing, and its Poison-type moves are super-effective against Steel types.",
@@ -184,6 +211,18 @@ export const Abilities: {[k: string]: ModdedAbilityData} = {
 			if (move.type === 'Ground') {
 				this.debug('Light Metal weaken');
 				return this.chainModify(0.5);
+			}
+		},
+	},
+	normalize:{
+		inherit: true,
+		shortDesc: "All of this Pokemon's moves become Normal type, and their power is boosted in Clear Air.",
+		rating: 1.5,
+		onBasePower(basePower, pokemon, target, move) {
+			if (move.normalizeBoosted) this.chainModify([4915, 4096]);
+			else if(this.field.isWeather('clearair') && move.category !== 'Status'){
+				this.debug("Normalize power boost in Clear Air.")
+				this.chainModify(1.5)
 			}
 		},
 	},
