@@ -214,6 +214,16 @@ export const Abilities: {[k: string]: ModdedAbilityData} = {
 			}
 		},
 	},
+	megalauncher:{
+		inherit: true,
+		shortDesc: "Increases the power of pulse and ball/bomb moves.",
+		rating: 3,
+		onBasePower(basePower, attacker, defender, move) {
+			if (move.flags['bullet'] || move.flags['pulse']) {
+				return this.chainModify(1.5);
+			}
+		},
+	},
 	normalize:{
 		inherit: true,
 		shortDesc: "All of this Pokemon's moves become Normal type, and their power is boosted in Clear Air.",
