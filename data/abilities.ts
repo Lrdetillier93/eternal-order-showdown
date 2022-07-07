@@ -4522,6 +4522,14 @@ export const Abilities: {[abilityid: string]: AbilityData} = {
 		name: "Glacial Voice",
 		rating: 1.5,
 	},
+	goldenfins: {
+		onModifyPriority(priority, pokemon, target, move) {
+			if (move?.type === 'Water' && pokemon.hp >= pokemon.maxhp * 0.5) return priority + 1;
+		},
+		name: "Golden Fins",
+		rating: 3,
+		num: 177,
+	},
 	heel:{
 		onSourceModifyDamage(dmg, source, target, move){
 			if(target.hasType("Fighting") && move.type === "Dark"){
@@ -4613,6 +4621,30 @@ export const Abilities: {[abilityid: string]: AbilityData} = {
 		},
 		name: "Mental Shield",
 		rating: 3.5,
+	},
+	motiontwister:{
+		onStart(source){
+			this.field.addPseudoWeather('trickroom')
+		},
+		name:"Motion Twister",
+		rating: 4,
+	},
+	snowforce: {
+		onBasePowerPriority: 21,
+		onBasePower(basePower, attacker, defender, move) {
+			if (this.field.isWeather('hail')) {
+				if (move.type === 'Ice' || move.type === 'Water') {
+					this.debug('Snow Force boost');
+					return this.chainModify([5325, 4096]);
+				}
+			}
+		},
+		onImmunity(type, pokemon) {
+			if (type === 'hail') return false;
+		},
+		name: "Snow Force",
+		rating: 2,
+		num: 159,
 	},
 	unearthly:{
 		onSourceModifyDamage(damage, source, target, move) {
